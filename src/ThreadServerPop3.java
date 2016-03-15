@@ -28,23 +28,46 @@ public class ThreadServerPop3 {
             output = socket.getOutputStream();
         } catch (IOException ex) {
             System.err.println(ex);
-        }
-        
+        }       
     }
     
     public void run() {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(input));
+        BufferedReader br = new BufferedReader(new InputStreamReader(input));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(output));
         
-        String msg1 = "+OK POP3 server Ready";
+        String msg = "+OK POP3 server Ready";
         try {
-            bw.write(msg1,0,msg1.length());
+            bw.write(msg,0,msg.length());
             bw.flush();
+            char[] bwah = new char[100];
+            int i = br.read(bwah);
+            
+            System.out.println(bwah);
+            if (msg.startsWith("USER")) {
+                String username = msg.split(" ")[1];
+                msg = "+OK";
+                bw.write(msg,0,msg.length());
+                bw.flush();
+                
+                System.out.println("Nouveau Client "+username);
+                
+                msg = br.readLine();
+                if (msg.startsWith("PASS")) {
+                    String password = msg.split(" ")[1];
+                    msg = "+OK";
+                    bw.write(msg,0,msg.length());
+                    bw.flush();
+                    
+                    System.out.println("Mot de Passe"+password);
+                }
+                
+            }
         } catch (IOException ex) {
             System.err.println(ex);
         }
-        
+
+           
+
     }
-    
 }
 

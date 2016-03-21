@@ -39,30 +39,77 @@ public class ThreadServerPop3 {
         try {
             bw.write(msg,0,msg.length());
             bw.flush();
-            char[] bwah = new char[100];
-            int i = br.read(bwah);
+            char[] received_char = new char[100];
+            String msg_send;
+
+            int i = br.read(received_char);
+            msg = String.valueOf(received_char);
             
-            System.out.println(bwah);
+            String username,password;
+            boolean connected = false, waitingForPass = false;
+            
+            System.out.println(msg);
             if (msg.startsWith("USER")) {
-                String username = msg.split(" ")[1];
+                username = msg.split(" ")[1];
                 msg = "+OK";
+                
+                try {
+                    bw.write(msg,0,msg.length());
+                     bw.flush();
+                } catch (IOException ex) {
+                    Logger.getLogger(ThreadServerPop3.class.getName()).log(Level.SEVERE, null, ex);
+                }
+               
+                
+                System.out.println("Nouveau Client "+username);
+                waitingForPass = true;
+                if(waitingForPass) {
+                    br.read(received_char);
+                    msg = String.valueOf(received_char);
+                    System.out.println(msg);
+                    if (msg.startsWith("PASS")) {
+                        password = msg.split(" ")[1];
+                        msg = "+OK maildrop has 1 message (369 octets)";
+                        try {
+                            bw.write(msg,0,msg.length());
+                            bw.flush();
+                        } catch (IOException ex) {
+                            Logger.getLogger(ThreadServerPop3.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+
+                        System.out.println("Mot de Passe "+password);
+                        connected = true;
+                    }
+                }
+
+            }
+            else if (msg.startsWith("APOP")) {
+                username = msg.split(" ")[1];
+                password = msg.split(" ")[2];
+                msg = "+OK maildrop has 1 message (369 octets)";
                 bw.write(msg,0,msg.length());
                 bw.flush();
                 
-                System.out.println("Nouveau Client "+username);
-                
-                msg = br.readLine();
-                if (msg.startsWith("PASS")) {
-                    String password = msg.split(" ")[1];
-                    msg = "+OK";
-                    bw.write(msg,0,msg.length());
-                    bw.flush();
-                    
-                    System.out.println("Mot de Passe"+password);
-                }
+                System.out.println("Nouveau Client "+username+" Mot de passe "+password);
+                connected = true;
                 
             }
-        } catch (IOException ex) {
+            
+            if (connected) {
+                while(true) {
+                    br.read(received_char);
+                    msg = String.valueOf(received_char);
+                    System.out.println(msg);
+                    if (msg.startsWith("RETR 1")) {
+                        msg = "+OK 369 octets message : cyril t'es nul à chier";
+                        bw.write(msg,0,msg.length());
+                        bw.flush();
+                    }
+                }
+            }
+                
+            } catch (IOException ex) {
             System.err.println(ex);
         }
 

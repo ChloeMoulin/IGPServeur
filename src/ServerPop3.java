@@ -20,10 +20,11 @@ public class ServerPop3 {
         Socket connexionClient = null;
         while(true) { 
             System.out.println("Waiting for client.");
-        connexionClient = Server.ss.accept();
+            connexionClient = Server.ss.accept();
             System.out.println("New POP3 Client. Adress "+connexionClient.getInetAddress()+" on "+connexionClient.getPort());
             ThreadServerPop3 st = new ThreadServerPop3(connexionClient);
             st.run();
+            st.interrupt();
         }
     }
     

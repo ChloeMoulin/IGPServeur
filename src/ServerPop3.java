@@ -2,8 +2,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.File;
 
 /**
  *
@@ -16,6 +15,14 @@ public class ServerPop3 {
     private static ServerSocket ss;
     
     public static void main(String[] arg) throws IOException {
+        File f = new File("mail");
+        if(!f.exists())
+            MailsFile.getInstance().seedMessages();
+        
+        f = new File("receiver");
+        if(!f.exists())
+            MailsFile.getInstance().seedReceivers();
+            
         ServerPop3 Server = new ServerPop3();
         Socket connexionClient = null;
         while(true) { 

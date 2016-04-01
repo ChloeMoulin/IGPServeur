@@ -8,14 +8,19 @@ import java.io.Serializable;
  */
 public class Message implements Serializable {
     
-    
+    String receiver;
     String message;
     
-    public Message(String msg) {
+    public Message(String msg, String receiver) {
         message = msg+"\r\n";
+        this.receiver = receiver;
     }
     
     public String getMessage() {
         return message;
+    }
+    
+    public String getReceiver(){
+        return receiver;
     }
 }

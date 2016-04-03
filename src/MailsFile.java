@@ -41,19 +41,88 @@ public class MailsFile {
 
 	public void seedMessages() {
             ArrayList<Message> l = new ArrayList<Message>();
-            l.add(new Message("Bonjour comment allez vous ? ","root"));
-            l.add(new Message("Cacao Cacaaaaaaoooooooooooooooooooo","root"));
-            l.add(new Message("Au revoir","root"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <root@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"+
+                                "Bonjour \r\n"+
+                                "comment allez vous ? \r\n"+
+                                ".\r\n","root"));
             
-            l.add(new Message("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod","Chloe"));
-            l.add(new Message("tempor incididunt ut labore et dolore magna aliqua","Chloe"));
-            l.add(new Message("Ut enim ad minim veniam","Chloe"));
-            l.add(new Message("quis nostrud exercitation ullamco laboris nisi ut","Chloe"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <root@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                + "Cacao Cacaaaaaaoooooooooooooooooooo"+
+                                ".\r\n","root"));
             
-            l.add(new Message("aliquip ex ea commodo consequat","Corentin"));
-            l.add(new Message("Duis aute irure dolor in reprehenderit in voluptate velit ","Corentin"));
-            l.add(new Message("esse cillum dolore eu fugiat nulla pariatur","Corentin"));
-            l.add(new Message("Excepteur sint occaecat cupidatat non proident","Corentin"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <root@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                + "Au revoir"+
+                                ".\r\n","root"));
+            
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <chloe@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                + "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"+
+                                ".\r\n","Chloe"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <chloe@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"tempor incididunt ut labore et dolore magna aliqua"+
+                                ".\r\n","Chloe"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <chloe@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"Ut enim ad minim veniam"+
+                                ".\r\n","Chloe"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <chloe@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"quis nostrud exercitation ullamco laboris nisi ut"+
+                                ".\r\n","Chloe"));
+            
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <corentin@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"aliquip ex ea commodo consequat"+
+                                ".\r\n","Corentin"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <corentin@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"Duis aute irure dolor in reprehenderit in voluptate velit "+
+                                ".\r\n","Corentin"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <corentin@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"esse cillum dolore eu fugiat nulla pariatur"+
+                                ".\r\n","Corentin"));
+            l.add(new Message("From: Moi <moi@meme.com>\r\n" +
+                                "To: Root <corentin@root.root>\r\n" +
+                                "Subject: IGP\r\n" +
+                                "Date: Sat, 2 Apr 2016 19:11:00\r\n"+
+                                "\r\n"
+                                +"Excepteur sint occaecat cupidatat non proident"+
+                                ".\r\n","Corentin"));
             
             try{		
                 oOutPut.writeObject(l);		
@@ -80,6 +149,8 @@ public class MailsFile {
 
         }
         
+        
+        
         public void updateMessages(List<Message> messages) {
             try{                  
                     file.delete();
@@ -99,5 +170,13 @@ public class MailsFile {
                         messages.remove(m);
             }
             return messages;
+        }
+        
+        public HashMap<String,String> readReceivers() throws IOException, ClassNotFoundException {
+            File fileReceiver = new File("receiver");
+            FileInputStream f = new FileInputStream(fileReceiver);
+            ObjectInputStream o  = new ObjectInputStream(f);
+            HashMap<String,String> receivers = (HashMap<String,String>) o.readObject();
+            return receivers;
         }
 }

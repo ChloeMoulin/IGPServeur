@@ -6,9 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.management.ManagementFactory;
+import java.math.BigInteger;
 import java.net.Socket;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -19,6 +23,7 @@ import java.util.List;
 public class ThreadServerPop3 extends Thread {
     
     private Socket socket;
+    private String timestamp;
     private InputStream input;
     private OutputStream output;
     private BufferedReader br;
@@ -29,12 +34,13 @@ public class ThreadServerPop3 extends Thread {
     private List<Message> markedMessages;
     List<Message> readMessages;
     
-    private final String READY = "+OK POP3 server Ready \r\n";
+    private final String READY = "+OK POP3 server ready";
     private final String OK = "+OK";
     private final String ERROR = "-ERR";
     
     
     public ThreadServerPop3 (Socket connexionClient) {
+        timestamp = ThreadServerPop3.generateTimeStamp();
         markedMessages  = new ArrayList();
         readMessages = new ArrayList();
         status = Status.AUTHORIZATION;
@@ -59,7 +65,8 @@ public class ThreadServerPop3 extends Thread {
         String username= "",password= "";
 
         
-        messageToSend = READY;
+        messageToSend = READY+" "+timestamp+" \r\n";
+        System.out.println(messageToSend);
         try {
             bw.write(messageToSend,0,messageToSend.length());
             bw.flush();
@@ -82,20 +89,25 @@ public class ThreadServerPop3 extends Thread {
                             System.out.println("New Client "+username);
                             status = Status.WAITING_PASS;
                             messageToSend = OK+"\r\n";
-                        } else if (receivedMessage.startsWith("APOP") && receivedMessage.split(" ").length >= 3) {
+                        } else if (receivedMessage.startsWith("APOP") && receivedMessage.split(" ").length >= 4) {
                             username = receivedMessage.split(" ")[1];
-                            password = receivedMessage.split(" ")[2];
-
-                            messageToSend = OK +" "+ messages.size() +" 369 \r\n";
-                            System.out.println("New Client "+username+" Password "+password);
                             
-                            try{
-                                messages = MailsFile.getInstance().readMails(username);
-                            }   catch( IOException | ClassNotFoundException e){
-                                    System.err.println(e.getMessage());
+                            Boolean b = MailsFile.getInstance().readReceivers().containsKey(username);
+                            password = receivedMessage.split(" ")[2];
+                            if(b && ThreadServerPop3.compareHashPassword(password, MailsFile.getInstance().readReceivers().get(username),timestamp)) {
+                                messageToSend = OK +" "+ messages.size() +" 369 \r\n";
+                                System.out.println("New Client "+username+" Password "+password);
+
+                                try{
+                                    messages = MailsFile.getInstance().readMails(username);
+                                }   catch( IOException | ClassNotFoundException e){
+                                        System.err.println(e.getMessage());
+                                }
+
+                                status = Status.TRANSACTION;
+                            } else {
+                                messageToSend = ERROR +" \r\n";
                             }
-                                    
-                            status = Status.TRANSACTION;
                         }
 
                         bw.write(messageToSend,0,messageToSend.length());
@@ -187,5 +199,29 @@ public class ThreadServerPop3 extends Thread {
             }                
         }
     }
+    
+    public static boolean compareHashPassword(String hashedPassword, String expectedPassword,String timestamps) {
+        String hashed = "";
+        hashedPassword = timestamps+hashedPassword;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(expectedPassword.getBytes(),0,expectedPassword.length());
+            hashed = new BigInteger(1, md.digest()).toString(16);        
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return (hashed.equals(hashedPassword));
+    }
+    
+    private static String generateTimeStamp() {
+        UUID uuid = UUID.randomUUID();
+        String processID = uuid.toString();
+        long clock = System.currentTimeMillis();
+        String host = ManagementFactory.getRuntimeMXBean().getName();
+        host = host.substring(host.indexOf("@") + 1);
+        String timestamp = "<"+processID+clock+"@"+host+">";
+        return timestamp;
+    }
+    
 }
 

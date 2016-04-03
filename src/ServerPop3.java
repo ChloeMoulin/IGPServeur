@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.File;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 /**
  *
@@ -15,6 +17,8 @@ public class ServerPop3 {
     private static ServerSocket ss;
     
     public static void main(String[] arg) throws IOException {
+        
+        
         File f = new File("mail");
         if(!f.exists())
             MailsFile.getInstance().seedMessages();
@@ -22,7 +26,8 @@ public class ServerPop3 {
         f = new File("receiver");
         if(!f.exists())
             MailsFile.getInstance().seedReceivers();
-            
+        
+                
         ServerPop3 Server = new ServerPop3();
         Socket connexionClient = null;
         while(true) { 
@@ -35,14 +40,24 @@ public class ServerPop3 {
         }
     }
     
-    public ServerPop3() {
-        ss = null;
+       public ServerPop3() {
+        SSLServerSocketFactory sslfactory =(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         try {
-            ss = new ServerSocket(2058);        
+            SSLServerSocket ss = (SSLServerSocket) sslfactory.createServerSocket(44856);
+            String[] strings=ss.getSupportedCipherSuites();
+            String[] parametres=new String[strings.length];
+            int i=0;
+            for(String param : strings){
+               if(param.contains("anon")){
+                   parametres[i]=param;
+                   i++;
+               }
+            }
+            ss.setEnabledCipherSuites(strings);
+            this.ss = ss;
         } catch (IOException ex) {
             System.err.println(ex);
         }
     }
-    
     
 }

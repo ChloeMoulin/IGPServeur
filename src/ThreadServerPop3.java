@@ -1,4 +1,6 @@
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,8 +28,8 @@ public class ThreadServerPop3 extends Thread {
     private String timestamp;
     private InputStream input;
     private OutputStream output;
-    private BufferedReader br;
-    private BufferedWriter bw;
+    private BufferedInputStream br;
+    private BufferedOutputStream bw;
     
     private Status status;
     private List<Message> messages;
@@ -45,11 +47,10 @@ public class ThreadServerPop3 extends Thread {
         readMessages = new ArrayList();
         status = Status.AUTHORIZATION;
         socket = connexionClient;
+
         try {
-            input = socket.getInputStream();
-            output = socket.getOutputStream();
-            br = new BufferedReader(new InputStreamReader(input));
-            bw = new BufferedWriter(new OutputStreamWriter(output));
+            bw = new BufferedOutputStream(this.socket.getOutputStream());
+            br = new BufferedInputStream(this.socket.getInputStream());
         } catch (IOException ex) {
             System.err.println(ex);
         } 
@@ -60,7 +61,7 @@ public class ThreadServerPop3 extends Thread {
         
         String messageToSend;           
         String receivedMessage;
-        char[] receivedChar = new char[100];
+        byte[] receivedChar = new byte[100];
         boolean quit = false;
         String username= "",password= "";
 
@@ -68,7 +69,7 @@ public class ThreadServerPop3 extends Thread {
         messageToSend = READY+" "+timestamp+" \r\n";
         System.out.println(messageToSend);
         try {
-            bw.write(messageToSend,0,messageToSend.length());
+            bw.write(messageToSend.getBytes("UTF-8"));
             bw.flush();
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -110,7 +111,7 @@ public class ThreadServerPop3 extends Thread {
                             }
                         }
 
-                        bw.write(messageToSend,0,messageToSend.length());
+                        bw.write(messageToSend.getBytes("UTF-8"));
                         bw.flush();
 
                     } catch (Exception e) {
@@ -121,7 +122,7 @@ public class ThreadServerPop3 extends Thread {
                 case WAITING_PASS :
                 {
                     try {
-                        receivedChar = new char[100];
+                        receivedChar = new byte[100];
                         br.read(receivedChar);
                         receivedMessage = String.valueOf(receivedChar);
                         if (receivedMessage.startsWith("PASS") && receivedMessage.split(" ").length >= 2) {
@@ -129,7 +130,7 @@ public class ThreadServerPop3 extends Thread {
                             System.out.println("Password for "+username+" : "+password);
 
                             messageToSend = OK +" "+ messages.size() +" 369 \r\n";
-                            bw.write(messageToSend,0,messageToSend.length());
+                            bw.write(messageToSend.getBytes("UTF-8"));
                             bw.flush();
                             
                             try{
@@ -148,7 +149,7 @@ public class ThreadServerPop3 extends Thread {
                 case TRANSACTION :
                 {
                     try {
-                        receivedChar = new char[100];
+                        receivedChar = new byte[100];
                         br.read(receivedChar);
                         receivedMessage = String.valueOf(receivedChar);
                         System.out.println("New Request : "+receivedMessage);
@@ -165,7 +166,7 @@ public class ThreadServerPop3 extends Thread {
                                 readMessages.add(messages.get(num-1));
                             }
 
-                            bw.write(messageToSend,0,messageToSend.length());
+                            bw.write(messageToSend.getBytes("UTF-8"));
                             bw.flush();
                             
                         } else if (receivedMessage.startsWith("DELE") && receivedMessage.split(" ").length >= 2) {
@@ -178,18 +179,18 @@ public class ThreadServerPop3 extends Thread {
                                 messageToSend = OK +" \r\n";
 
                             }
-                            bw.write(messageToSend,0,messageToSend.length());
+                            bw.write(messageToSend.getBytes("UTF-8"));
                             bw.flush();
                         } else if (receivedMessage.equals("QUIT")) {
                             messageToSend = OK +" \r\n";
-                            bw.write(messageToSend,0,messageToSend.length());
+                            bw.write(messageToSend.getBytes("UTF-8"));
                             bw.flush();
                             messages.removeAll(markedMessages);
                             MailsFile.getInstance().updateMessages(messages);
                             quit = true;
                         } else {
                             messageToSend = ERROR +" \r\n";
-                            bw.write(messageToSend,0,messageToSend.length());
+                            bw.write(messageToSend.getBytes("UTF-8"));
                             bw.flush();
                         }
                     } catch (Exception e) {

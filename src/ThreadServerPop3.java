@@ -82,7 +82,8 @@ public class ThreadServerPop3 extends Thread {
                 {                    
                     try {
                         br.read(receivedChar);
-                        receivedMessage = String.valueOf(receivedChar);
+                        receivedMessage = new String(receivedChar,"UTF-8");
+                                
                         System.out.println("Client "+socket.getInetAddress()+" : "+receivedMessage);
 
                         if(receivedMessage.startsWith("USER") && receivedMessage.split(" ").length >= 2) {
@@ -90,13 +91,13 @@ public class ThreadServerPop3 extends Thread {
                             System.out.println("New Client "+username);
                             status = Status.WAITING_PASS;
                             messageToSend = OK+"\r\n";
-                        } else if (receivedMessage.startsWith("APOP") && receivedMessage.split(" ").length >= 4) {
+                        } else if (receivedMessage.startsWith("APOP") && receivedMessage.split(" ").length >= 3) {
                             username = receivedMessage.split(" ")[1];
                             
                             Boolean b = MailsFile.getInstance().readReceivers().containsKey(username);
                             password = receivedMessage.split(" ")[2];
-                            if(b && ThreadServerPop3.compareHashPassword(password, MailsFile.getInstance().readReceivers().get(username),timestamp)) {
-                                messageToSend = OK +" "+ messages.size() +" 369 \r\n";
+                            if(b && ThreadServerPop3.compareHashPassword(password, MailsFile.getInstance().readReceivers().get(username),timestamp)) {                       
+                                
                                 System.out.println("New Client "+username+" Password "+password);
 
                                 try{
@@ -104,13 +105,15 @@ public class ThreadServerPop3 extends Thread {
                                 }   catch( IOException | ClassNotFoundException e){
                                         System.err.println(e.getMessage());
                                 }
-
+                                messageToSend = OK +" "+ messages.size() +" 369 \r\n";
                                 status = Status.TRANSACTION;
                             } else {
                                 messageToSend = ERROR +" \r\n";
                             }
+                        } else {
+                            messageToSend = ERROR +" \r\n";
                         }
-
+                        System.out.println("message2: "+messageToSend);
                         bw.write(messageToSend.getBytes("UTF-8"));
                         bw.flush();
 
@@ -124,7 +127,7 @@ public class ThreadServerPop3 extends Thread {
                     try {
                         receivedChar = new byte[100];
                         br.read(receivedChar);
-                        receivedMessage = String.valueOf(receivedChar);
+                        receivedMessage = new String(receivedChar,"UTF-8");
                         if (receivedMessage.startsWith("PASS") && receivedMessage.split(" ").length >= 2) {
                             password = receivedMessage.split(" ")[1];
                             System.out.println("Password for "+username+" : "+password);
@@ -151,7 +154,7 @@ public class ThreadServerPop3 extends Thread {
                     try {
                         receivedChar = new byte[100];
                         br.read(receivedChar);
-                        receivedMessage = String.valueOf(receivedChar);
+                         receivedMessage = new String(receivedChar,"UTF-8");
                         System.out.println("New Request : "+receivedMessage);
 
                         if(receivedMessage.startsWith("RETR") && receivedMessage.split(" ").length >= 2) {
@@ -203,15 +206,15 @@ public class ThreadServerPop3 extends Thread {
     
     public static boolean compareHashPassword(String hashedPassword, String expectedPassword,String timestamps) {
         String hashed = "";
-        hashedPassword = timestamps+hashedPassword;
+        hashed= timestamps+expectedPassword;
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(expectedPassword.getBytes(),0,expectedPassword.length());
+            md.update(hashed.getBytes(),0,hashed.length());
             hashed = new BigInteger(1, md.digest()).toString(16);        
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        return (hashed.equals(hashedPassword));
+        return (hashed.trim().equals(hashedPassword.trim()));
     }
     
     private static String generateTimeStamp() {

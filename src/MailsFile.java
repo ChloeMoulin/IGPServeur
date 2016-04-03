@@ -33,6 +33,7 @@ public class MailsFile {
     }
     
     public static MailsFile getInstance() {
+        System.out.println(instance==null);
             if (instance == null) {
                     instance = new MailsFile();
             }
@@ -40,7 +41,7 @@ public class MailsFile {
     }
 
 	public void seedMessages() {
-            ArrayList<Message> l = new ArrayList<Message>();
+            ArrayList<Message> l = new ArrayList();
             l.add(new Message("From: Moi <moi@meme.com>\r\n" +
                                 "To: Root <root@root.root>\r\n" +
                                 "Subject: IGP\r\n" +
@@ -163,13 +164,20 @@ public class MailsFile {
 		}
         }
         
-        public List<Message> readMails(String username) throws IOException, ClassNotFoundException {
-            List<Message> messages = (List<Message>) oInPut.readObject();
+        public ArrayList<Message> readMails(String username) throws IOException, ClassNotFoundException {
+            System.out.println("blo");
+            File fileReceiver = new File("mail");
+            FileInputStream f = new FileInputStream(fileReceiver);
+            ObjectInputStream o  = new ObjectInputStream(f);
+            ArrayList<Message> messages = (ArrayList<Message>) o.readObject();
+            System.out.println(messages);
             for (Message m : messages) {
-                if (m.getReceiver() != username)
+                if (!m.getReceiver().equals(username))
                         messages.remove(m);
             }
+            System.out.println(messages);
             return messages;
+            
         }
         
         public HashMap<String,String> readReceivers() throws IOException, ClassNotFoundException {

@@ -35,26 +35,14 @@ public class ServerPop3 {
             connexionClient = Server.ss.accept();
             System.out.println("New POP3 Client. Adress "+connexionClient.getInetAddress()+" on "+connexionClient.getPort());
             ThreadServerPop3 st = new ThreadServerPop3(connexionClient);
-            st.run();
-            st.interrupt();
+            st.start();
         }
     }
     
-       public ServerPop3() {
-        SSLServerSocketFactory sslfactory =(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+    public ServerPop3() {
+        ss = null;
         try {
-            SSLServerSocket ss = (SSLServerSocket) sslfactory.createServerSocket(44856);
-            String[] strings=ss.getSupportedCipherSuites();
-            String[] parametres=new String[strings.length];
-            int i=0;
-            for(String param : strings){
-               if(param.contains("anon")){
-                   parametres[i]=param;
-                   i++;
-               }
-            }
-            ss.setEnabledCipherSuites(strings);
-            this.ss = ss;
+            ss = new ServerSocket(2058);        
         } catch (IOException ex) {
             System.err.println(ex);
         }
